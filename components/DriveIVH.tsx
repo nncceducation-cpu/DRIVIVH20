@@ -77,7 +77,7 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
   ];
 
   return (
-    <div className="flex flex-col bg-slate-50/90 backdrop-blur-sm font-sans text-slate-900 rounded-xl overflow-hidden shadow-2xl border border-slate-200 h-[calc(100vh-3rem)] w-full max-w-6xl mx-auto transition-all">
+    <div className="flex flex-col bg-slate-50 font-sans text-slate-900 overflow-hidden h-full w-full min-w-0">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 shadow-md shrink-0 relative z-20">
         <div className="flex items-center justify-between relative">
@@ -92,7 +92,7 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
           </div>
           
           {/* Centered License Plate - CSS Recreation */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden md:block z-0 pointer-events-none select-none opacity-95">
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden xl:block z-0 pointer-events-none select-none opacity-95">
              <div className="bg-white w-32 h-16 rounded-[4px] shadow-lg border border-slate-300 flex flex-col relative overflow-hidden">
                 {/* Bolt Holes */}
                 <div className="absolute top-1.5 left-2 w-1.5 h-1.5 rounded-full bg-slate-200 shadow-inner"></div>
@@ -130,25 +130,25 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
       </header>
 
       {/* Navigation */}
-      <nav className="flex bg-white border-b border-slate-200 shrink-0 overflow-x-auto no-scrollbar">
+      <nav aria-label="Main navigation" className="primary-tabs bg-white border-b border-slate-200 shrink-0 w-full">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-none md:flex-1 flex items-center justify-center space-x-2 py-4 px-5 text-sm font-medium transition-all duration-200 whitespace-nowrap border-b-2
+            className={`min-w-0 flex items-center justify-center gap-2 py-2.5 px-2 text-xs sm:text-sm font-medium transition-colors whitespace-normal border-b-2 min-h-[46px]
               ${activeTab === tab.id 
                ? 'text-blue-700 border-blue-700 bg-blue-50/50' 
                 : 'text-slate-500 border-transparent hover:text-blue-600 hover:bg-slate-50'
               }`}
           >
-            {tab.icon}
-            <span>{tab.label}</span>
+            <span className="shrink-0">{tab.icon}</span>
+            <span className="leading-tight">{tab.label}</span>
           </button>
         ))}
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50 scroll-smooth">
+      <main className="flex-1 min-h-0 min-w-0 overflow-y-auto p-2 sm:p-3 bg-slate-50 scroll-smooth">
         
         {/* PROTOCOLS VIEW */}
         <PersistentPanel active={activeTab === 'protocols'}>
