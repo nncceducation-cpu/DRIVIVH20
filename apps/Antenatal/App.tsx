@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Baby, BookOpen, Activity, HeartHandshake } from 'lucide-react';
+import { Baby, BookOpen, Activity, HeartHandshake, Languages, ExternalLink } from 'lucide-react';
 import { CONSULT_DATA } from './constants';
 import ReferenceTable from './components/ReferenceTable';
 import RiskCalculator from './components/RiskCalculator';
@@ -19,6 +19,7 @@ function AntenatalConsult() {
     <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 mb-4">Reference content and gestation-based figures are copied from the supplied NeoConsult app. They are population estimates, not individualized predictions. Confirm the applicable cohort and local care pathway. Notes remain editable drafts; missing patient details stay unfilled.</div>
     <nav aria-label="Antenatal Consult sections" className="flex flex-wrap gap-2 mb-5">
       {([{id:'guidelines',label:'Prematurity Guidelines',icon:BookOpen},{id:'outcomes',label:'Survival and Outcomes',icon:Activity},{id:'counseling',label:'Structured Summary and Parent FAQs',icon:HeartHandshake}] as const).map(tab => <button key={tab.id} onClick={()=>setView(tab.id)} aria-pressed={view===tab.id} className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border ${view===tab.id?'bg-blue-700 border-blue-700 text-white':'bg-white border-slate-200 text-slate-700'}`}><tab.icon size={17}/>{tab.label}</button>)}
+      <a href="https://neolingo.calnncc.chatgpt.site/" target="_blank" rel="noopener noreferrer" aria-label="Open NeoLingo (opens in new tab)" className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border bg-white border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300"><Languages size={17}/><span>NeoLingo</span><ExternalLink size={14}/></a>
     </nav>
     <div className={`grid gap-6 ${view==='outcomes'?'grid-cols-1':'grid-cols-1 xl:grid-cols-2'}`}>
       <div>
