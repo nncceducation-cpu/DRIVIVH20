@@ -31,6 +31,7 @@ import Timeline from './Timeline';
 import Counseling from './Counseling';
 import CNNCalculator from './CNNCalculator';
 import VONBenchmark from './VONBenchmark';
+import PersistentPanel from './PersistentPanel';
 import { RefImage } from '../types';
 
 interface DriveIVHProps {
@@ -300,21 +301,21 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
            </div>
         )}
 
-        {activeTab === 'antenatal' && (
+        <PersistentPanel active={activeTab === 'antenatal'}>
           <PublishedApp app="Antenatal" title="Antenatal Consult" />
-        )}
+        </PersistentPanel>
 
         {/* BENCHMARK TOOL */}
-        {activeTab === 'benchmark' && (
+        <PersistentPanel active={activeTab === 'benchmark'}>
           <VONBenchmark onSwitchToCNN={() => setActiveTab('cnn_calculator')} />
-        )}
+        </PersistentPanel>
 
         {/* CNN CALCULATOR TOOL */}
-        {activeTab === 'cnn_calculator' && (
+        <PersistentPanel active={activeTab === 'cnn_calculator'} preload>
            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 h-full">
              <CNNCalculator onSwitchToBenchmark={() => setActiveTab('benchmark')} />
            </div>
-        )}
+        </PersistentPanel>
         
         {/* COUNSELING / FAMILY CARE MODULE */}
         {activeTab === 'counseling' && (

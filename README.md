@@ -33,3 +33,9 @@ The imported postnatal calculator uses heuristic coefficients different from the
 GitHub Pages cannot run the original Express/Gemini server. Draft preparation therefore runs locally, retains missing `***` fields, and appends entered context without inventing medication history or a care decision. The counseling care goal defaults to pending. Export buttons prepare editable drafts and do not send anything to an external medical record. No clinical context is sent to an AI endpoint, and no key is bundled. External CNN, VON and evidence portals retain their own availability and sign-in requirements.
 
 The antenatal app builds with the root Vite installation and uses the already pinned Diagnosis app's Tailwind/PostCSS dependencies. It needs no additional server or package installation.
+
+## Embedded tools and loading
+
+NeoLingo opens inside Antenatal Consult with a separate-window fallback. Microphone permission is delegated to the embedded view and remains controlled by the browser. The app does not copy translation text or audio into the consultation note.
+
+CNN and VON connections are prepared early and kept mounted across tab changes; CNN also stays open while its guide is shown. The Antenatal app and its draft remain mounted after the first visit. Loading indicators no longer cover the external page. These changes avoid repeat document loads within the same open app session; initial external-server response time remains outside this app's control. An explicit CNN Reload or a full browser refresh still starts a new connection.

@@ -6,6 +6,7 @@ import RiskVisualizer from './RiskVisualizer';
 import CNNPostnatalCalculator from './CNNPostnatalCalculator';
 import CNNCalculator from '../../../components/CNNCalculator';
 import VONBenchmark from '../../../components/VONBenchmark';
+import PersistentPanel from '../../../components/PersistentPanel';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface RiskCalculatorProps {
@@ -96,18 +97,16 @@ const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGe
         </nav>
 
         {/* Content View Based on Category & Submode */}
-        {prematurityMode === 'von' ? (
+        <PersistentPanel active={prematurityMode === 'von'} preload>
           <VONBenchmark onSwitchToCNN={() => setPrematurityMode('cnn_portal')} />
-        ) : prematurityMode === 'cnn_portal' ? (
+        </PersistentPanel>
+        <PersistentPanel active={prematurityMode === 'cnn_portal'} preload>
           <CNNCalculator onSwitchToBenchmark={() => setPrematurityMode('von')} />
-        ) : activeCategory === 'prematurity' && prematurityMode === 'postnatal_cnn' ? (
-          <div className="flex-1 animate-in fade-in duration-300">
-            <CNNPostnatalCalculator 
-              onSendToEMR={handleCNNExport}
-              defaultGestationalAge={gestationalAge}
-            />
-          </div>
-        ) : (
+        </PersistentPanel>
+        <PersistentPanel active={prematurityMode === 'postnatal_cnn'}>
+          <CNNPostnatalCalculator onSendToEMR={handleCNNExport} defaultGestationalAge={gestationalAge} />
+        </PersistentPanel>
+        <PersistentPanel active={prematurityMode === 'antenatal'}>
           <div className="space-y-6 flex-1">
             <p className="text-sm p-3 bg-amber-50 border border-amber-200 rounded-lg">The figures below are the supplied app's gestation-based reference data. CNN cohort attribution has not been independently verified. Use the official CNN calculator for postnatal NOPS predictions.</p>
             {/* Dynamic Inputs for Antenatal or Other Categories */}
@@ -191,7 +190,7 @@ const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGe
               </span>
             </div>
           </div>
-        )}
+        </PersistentPanel>
       </div>
     </div>
   );

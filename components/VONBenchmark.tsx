@@ -1,4 +1,5 @@
 import React from 'react';
+import ExternalToolFrame from './ExternalToolFrame';
 import { BarChart2, Calculator, ExternalLink } from 'lucide-react';
 
 export default function VONBenchmark({ onSwitchToCNN, cnnLabel = 'CNN Calculator' }: { onSwitchToCNN: () => void; cnnLabel?: string }) {
@@ -38,14 +39,7 @@ export default function VONBenchmark({ onSwitchToCNN, cnnLabel = 'CNN Calculator
                    </a>
                 </div>
              </div>
-             <div className="flex-1 relative bg-slate-100">
-                <iframe 
-                  src="https://von-reference-benchmark-tool-915899500738.us-west1.run.app/"
-                  title="VON Survival and Outcome"
-                  className="absolute inset-0 w-full h-full border-0"
-                  allowFullScreen
-                />
-             </div>
+             <ExternalToolFrame url="https://von-reference-benchmark-tool-915899500738.us-west1.run.app/" title="VON Survival and Outcome" />
           </div>
   );
 }

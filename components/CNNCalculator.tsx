@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import PersistentPanel from './PersistentPanel';
+import ExternalToolFrame from './ExternalToolFrame';
 import { 
   Calculator, 
   ExternalLink, 
@@ -21,7 +23,6 @@ export const CNNCalculator: React.FC<CNNCalculatorProps> = ({ onSwitchToBenchmar
   const [activeSubTab, setActiveSubTab] = useState<'calculator' | 'guide'>('calculator');
   const [iframeKey, setIframeKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const CNN_URL = "https://www.canadianneonatalnetwork.org/CAL/Calculator.aspx";
 
@@ -107,7 +108,7 @@ export const CNNCalculator: React.FC<CNNCalculatorProps> = ({ onSwitchToBenchmar
       </div>
 
       {/* Main Content Area */}
-      {activeSubTab === 'calculator' ? (
+      <PersistentPanel active={activeSubTab === 'calculator'} preload>
         <div className="flex-1 flex flex-col relative bg-slate-100 min-h-[640px]">
           {/* Sub-banner notification */}
           <div className="bg-amber-50/90 border-b border-amber-200 px-4 py-2 text-xs text-amber-900 flex items-center justify-between shrink-0">
@@ -127,27 +128,11 @@ export const CNNCalculator: React.FC<CNNCalculatorProps> = ({ onSwitchToBenchmar
             </button>
           </div>
 
-          {/* Iframe container */}
-          <div className="flex-1 relative w-full h-full min-h-[580px] bg-white">
-            {isLoading && (
-              <div className="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center gap-3 z-10 text-slate-500">
-                <div className="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-xs font-medium text-slate-600">Connecting to Canadian Neonatal Network calculator...</p>
-              </div>
-            )}
-            <iframe
-              key={iframeKey}
-              ref={iframeRef}
-              src={CNN_URL}
-              title="Canadian Neonatal Network NOPS Calculator"
-              className="w-full h-full border-0 absolute inset-0"
-              onLoad={() => setIsLoading(false)}
-              allow="same-origin scripts forms"
-            />
-          </div>
+          <ExternalToolFrame reloadToken={iframeKey} url={CNN_URL} title="Canadian Neonatal Network NOPS Calculator" onLoad={() => setIsLoading(false)} />
         </div>
-      ) : (
-        /* Clinical Model Guide & Documentation */
+      </PersistentPanel>
+      <PersistentPanel active={activeSubTab === 'guide'}>
+        {/* Clinical Model Guide & Documentation */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50 space-y-6">
           {/* Cohort Overview Card */}
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -344,7 +329,7 @@ export const CNNCalculator: React.FC<CNNCalculatorProps> = ({ onSwitchToBenchmar
             </button>
           </div>
         </div>
-      )}
+      </PersistentPanel>
     </div>
   );
 };
