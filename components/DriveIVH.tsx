@@ -32,6 +32,7 @@ import Counseling from './Counseling';
 import CNNCalculator from './CNNCalculator';
 import VONBenchmark from './VONBenchmark';
 import PersistentPanel from './PersistentPanel';
+import ExternalToolFrame from './ExternalToolFrame';
 import { RefImage } from '../types';
 
 interface DriveIVHProps {
@@ -150,7 +151,7 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50 scroll-smooth">
         
         {/* PROTOCOLS VIEW */}
-        {activeTab === 'protocols' && (
+        <PersistentPanel active={activeTab === 'protocols'}>
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-4xl mx-auto">
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-md shadow-sm mb-6">
               <div className="flex items-start">
@@ -238,6 +239,14 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
                   </ul>
                 </div>
                 
+                <section className="flex flex-col min-h-[700px] overflow-hidden rounded-xl border border-slate-200 bg-white" aria-label="BP centile calculator">
+                  <header className="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-slate-200 bg-blue-50">
+                    <h4 className="font-bold text-slate-900 flex items-center gap-2"><Activity size={18} />BP Centile Calculator</h4>
+                    <a href="https://nncceducation-cpu.github.io/BP-calculator/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-700 underline">Open BP calculator separately <ExternalLink size={14} /></a>
+                  </header>
+                  <ExternalToolFrame url="https://nncceducation-cpu.github.io/BP-calculator/" title="Neonatal Blood Pressure Centile Calculator" />
+                </section>
+
                 <div className="border-l-4 border-purple-500 pl-3">
                   <h4 className="font-bold text-slate-900">Fluid Boluses</h4>
                   <p className="mt-1">Avoid rapid expansion. Administer bolus over <strong>30-60 minutes</strong>.</p>
@@ -278,7 +287,7 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
               </ul>
             </ProtocolSection>
           </div>
-        )}
+        </PersistentPanel>
 
         {/* CHECKLISTS VIEW */}
         {activeTab === 'checklists' && (
@@ -446,11 +455,11 @@ const ProtocolSection: React.FC<{title: string, icon: React.ReactNode, children:
       </div>
       {isOpen ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
     </button>
-    {isOpen && (
+    <PersistentPanel active={isOpen}>
       <div className="p-4 border-t border-slate-100 bg-slate-50 animate-in slide-in-from-top-1 duration-200">
         {children}
       </div>
-    )}
+    </PersistentPanel>
   </div>
 );
 
