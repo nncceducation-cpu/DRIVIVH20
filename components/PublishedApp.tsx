@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PublishedApp({ app, title }: { app: 'HUSDiagnostic' | 'PHVD'; title: string }) {
+export default function PublishedApp({ app, title }: { app: 'HUSDiagnostic' | 'PHVD' | 'Antenatal'; title: string }) {
   const url = `${import.meta.env.BASE_URL}apps/${app}/index.html`;
   return (
     <section className="h-full min-h-[600px] flex flex-col gap-2">

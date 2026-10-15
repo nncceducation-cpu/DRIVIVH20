@@ -3,7 +3,7 @@ import { cp, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 const root = process.cwd();
 await build();
-for (const app of ['HUSDiagnostic', 'PHVD']) {
+for (const app of ['HUSDiagnostic', 'PHVD', 'Antenatal']) {
   const appRoot = path.join(root, 'apps', app);
   process.chdir(appRoot);
   await build({ root: appRoot, configFile: path.join(appRoot, 'vite.config.ts') });

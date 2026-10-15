@@ -56,15 +56,15 @@ export const CNNCalculator: React.FC<CNNCalculatorProps> = ({ onSwitchToBenchmar
 
         {/* Right side controls */}
         <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
-          {/* Quick peer switch to VON Benchmark */}
+          {/* Quick peer switch to VON Survival and Outcome */}
           {onSwitchToBenchmark && (
             <button
               onClick={onSwitchToBenchmark}
               className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-700 bg-white border border-slate-300 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
-              title="Switch to VON Reference Benchmark Tool"
+              title="Switch to VON Survival and Outcome"
             >
               <BarChart2 size={14} className="text-blue-600" />
-              <span>VON Benchmark</span>
+              <span>VON Survival and Outcome</span>
             </button>
           )}
 

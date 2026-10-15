@@ -24,6 +24,8 @@ jobs:
       - run: npm run build
       - run: npm exec --prefix apps/HUSDiagnostic -- tsc -p apps/HUSDiagnostic/tsconfig.json
       - run: npm exec --prefix apps/PHVD -- tsc -p apps/PHVD/tsconfig.json
+      - run: node node_modules/typescript/bin/tsc -p apps/Antenatal/tsconfig.json
+      - run: node scripts/test-antenatal.mjs
       - run: node apps/PHVD/scripts/test-accuracy.mjs
       - run: node apps/PHVD/scripts/test-risk.mjs
       - run: node apps/PHVD/scripts/test-history.mjs
