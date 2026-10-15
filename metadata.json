@@ -1,0 +1,8 @@
+{
+  "name": "VON DRIVE IVH 2.0",
+  "description": "Interactive neonatal cranial ultrasound consensus tool with VON benchmarking, Canadian Neonatal Network (CNN) outcome calculator, AI-assisted reporting, and parent counseling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
