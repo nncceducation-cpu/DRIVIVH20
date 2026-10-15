@@ -54,17 +54,17 @@ const downloadCSV = (filename: string, content: string) => {
 };
 
 const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
-  const [activeTab, setActiveTab] = useState('protocols');
+  const [activeTab, setActiveTab] = useState('benchmark');
   const [expandedSection, setExpandedSection] = useState('golden_hour');
 
   // Navigation Tabs
   const tabs = [
+    { id: 'benchmark', label: "VON Benchmark", icon: <BarChart2 size={18} /> },
+    { id: 'cnn_calculator', label: "CNN Calculator", icon: <Calculator size={18} /> },
     { id: 'protocols', label: "Protocols", icon: <BookOpen size={18} /> },
     { id: 'checklists', label: "Checklists", icon: <ClipboardCheck size={18} /> },
     { id: 'classification', label: "Diagnosis", icon: <Stethoscope size={18} /> },
     { id: 'phvd', label: "PHVD", icon: <LineChart size={18} /> },
-    { id: 'benchmark', label: "VON Benchmark", icon: <BarChart2 size={18} /> },
-    { id: 'cnn_calculator', label: "CNN Calculator", icon: <Calculator size={18} /> },
     { id: 'counseling', label: "Family Care", icon: <Users size={18} /> },
     { id: 'audit', label: "Audit Tool", icon: <Activity size={18} /> },
     { id: 'screening', label: "CUS Screening", icon: <Calendar size={18} /> },
