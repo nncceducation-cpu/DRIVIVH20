@@ -1,5 +1,7 @@
 # DRIVE IVH 2.0
 
+Public app: https://nncceducation-cpu.github.io/DRIVIVH20/
+
 Copy of the supplied Google AI Studio export, migrated to a standalone Vite project.
 
 ## Run
@@ -18,4 +20,4 @@ The `apps/` folders contain web sources and assets; native store projects and si
 
 Original simplified classification and PHVD components remain as unused archive source; the navigation uses the copied published apps. The original Gemini-dependent components are not loaded by the migrated tabs. No API keys, local environment file, or AI Studio prompt history are included.
 
-The main pathway retains its original external Tailwind CDN and reference image URLs. This is not a completely offline app. `dist/` can be served by any static host, including under a repository subpath. GitHub Actions builds and uploads a web artifact; hosting configuration is separate.
+The main pathway retains its original external Tailwind CDN and reference image URLs. This is not a completely offline app. `dist/` can be served by any static host, including under a repository subpath. GitHub Actions builds, checks, and publishes the app to GitHub Pages after each push to main.
