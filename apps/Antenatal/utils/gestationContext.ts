@@ -1,0 +1,59 @@
+import { RISK_DATA } from '../riskData';
+import { PARENT_COUNSELING_DATABASE } from '../data/counselingData';
+
+export const REFERENCE_WARNING = 'Imported NeoConsult reference figures; cohort attribution has not been independently verified. These are not individualized predictions.';
+export function getGestationContext(weeks: number) {
+  const profile = RISK_DATA.prematurity.profiles[String(weeks)];
+  if (!profile) throw new Error('Select a completed gestational week from 22 to 28.');
+  const statistics = profile.stats.map(stat => `${stat.label}: ${stat.value}%`).join('; ');
+  const reference = `${weeks} completed weeks. ${statistics}. ${REFERENCE_WARNING}`;
+  return { weeks, profile, statistics, reference };
+}
+
+export function getGestationCounseling(weeks: number) {
+  const base = PARENT_COUNSELING_DATABASE.prematurity;
+  const { reference } = getGestationContext(weeks);
+  return {
+    ...base,
+    diagnosticSummary: base.diagnosticSummary.replace('at borderline viability (22-28 weeks gestation)', `at ${weeks} completed weeks gestation`),
+    deliveryRoomPlan: `Selected gestation: ${weeks} completed weeks. ${base.deliveryRoomPlan}`,
+    nicuExpectations: `For delivery at ${weeks} completed weeks: ${base.nicuExpectations}`,
+    longTermPrognosis: reference,
+    faqs: base.faqs.map(faq => {
+      if (faq.id === 'prem_survival' || faq.id === 'prem_disability') return {
+        ...faq, question: faq.id === 'prem_survival' ? `What are the survival reference figures at ${weeks} weeks?` : `What are the developmental outcome reference figures at ${weeks} weeks?`,
+        answer: reference, evidenceRef: 'Imported NeoConsult gestation table; source attribution unverified'
+      };
+      if (faq.id === 'prem_postnatal_survival') return { ...faq,
+        answer: `For an infant born at ${weeks} weeks, postnatal estimates also depend on the day of life and clinical course. Use the official CNN calculator for postnatal NOPS predictions; the antenatal reference figures are not conditional survival estimates.`,
+        evidenceRef: 'Official CNN calculator: https://www.canadianneonatalnetwork.org/CAL/Calculator.aspx'
+      };
+      return { ...faq, answer: `Selected gestation: ${weeks} completed weeks. ${faq.answer}` };
+    })
+  };
+}
+
+const START = '--- CURRENT GESTATION REFERENCE (AUTO-UPDATED) ---';
+const END = '--- END CURRENT GESTATION REFERENCE ---';
+export function syncGestationReference(content: string, weeks: number): string {
+  const block = `${START}\n${getGestationContext(weeks).reference}\n${END}`;
+  const start = content.indexOf(START), end = content.indexOf(END, start);
+  if (start >= 0 && end >= start) return content.slice(0, start) + block + content.slice(end + END.length);
+  return `${content}\n\n${block}`;
+}
+
+export function syncGestationDraft(content: string, previous: number, next: number): string {
+  const oldData = getGestationCounseling(previous), newData = getGestationCounseling(next);
+  let result = content;
+  for (const key of ['diagnosticSummary', 'deliveryRoomPlan', 'nicuExpectations', 'longTermPrognosis'] as const) {
+    result = result.replaceAll(oldData[key], newData[key]);
+  }
+  oldData.faqs.forEach((faq, index) => {
+    result = result.replaceAll(faq.question, newData.faqs[index].question).replaceAll(faq.answer, newData.faqs[index].answer);
+  });
+  result = result.replaceAll(`**Gestational Age:** ${previous} completed weeks`, `**Gestational Age:** ${next} completed weeks`)
+    .replaceAll(`Threatened preterm delivery at ${previous} weeks`, `Threatened preterm delivery at ${next} weeks`)
+    .replaceAll(`implications of delivery at ${previous} weeks`, `implications of delivery at ${next} weeks`)
+    .replaceAll(`statistics for ${previous} weeks`, `statistics for ${next} weeks`);
+  return syncGestationReference(result, next);
+}

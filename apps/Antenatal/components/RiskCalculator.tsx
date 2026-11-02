@@ -11,10 +11,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface RiskCalculatorProps {
   initialCategoryId: string;
+  gestationalAge: number;
+  onGestationalAgeChange: (weeks: number) => void;
   onGenerate?: (context: string, categoryId: string, topicName: string) => void;
 }
 
-const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGenerate }) => {
+const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGenerate, gestationalAge, onGestationalAgeChange }) => {
   const { t } = useLanguage();
   // Determine valid initial category. If current category has no risk data, default to prematurity.
   const validInitialId = RISK_DATA[initialCategoryId] ? initialCategoryId : 'prematurity';
@@ -26,14 +28,12 @@ const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGe
   const [prematurityMode, setPrematurityMode] = useState<'postnatal_cnn' | 'antenatal' | 'von' | 'cnn_portal'>('antenatal');
 
   // Prematurity Slider State
-  const [gestationalAge, setGestationalAge] = useState(24);
 
   useEffect(() => {
     if (RISK_DATA[initialCategoryId]) {
       setActiveCategory(initialCategoryId);
       // Reset selections when category changes externally
       if (RISK_DATA[initialCategoryId].isGestational) {
-        setGestationalAge(24);
       } else {
         const firstProfile = Object.keys(RISK_DATA[initialCategoryId].profiles)[0];
         setSelectedProfileId(firstProfile || '');
@@ -126,7 +126,7 @@ const RiskCalculator: React.FC<RiskCalculatorProps> = ({ initialCategoryId, onGe
                     max="28" 
                     step="1" 
                     value={gestationalAge}
-                    onChange={(e) => setGestationalAge(parseInt(e.target.value))}
+                    onChange={(e) => onGestationalAgeChange(parseInt(e.target.value))}
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
                   <div className="flex justify-between text-xs text-slate-400 px-1">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Activity, 
   ExternalLink, 
@@ -68,6 +68,10 @@ export const CNNPostnatalCalculator: React.FC<CNNPostnatalCalculatorProps> = ({
       setBirthWeight(defaultWeights[newGA]);
     }
   };
+
+  useEffect(() => {
+    setGestationalAge(defaultGestationalAge);
+  }, [defaultGestationalAge]);
 
   // Run calculation
   const calculationInput: CNNPredictionInput = useMemo(() => ({

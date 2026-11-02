@@ -1,28 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Copy, RotateCcw, Wand2, Check } from 'lucide-react';
 import { generateEnhancedConsult } from '../services/geminiService';
 import { LoadingState } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { syncGestationReference, syncGestationDraft } from '../utils/gestationContext';
 
 interface TemplateEditorProps {
   initialTemplate: string;
   templateName: string;
+  gestationalAge: number;
   autoFillTrigger?: { context: string, timestamp: number } | null;
 }
 
-const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templateName, autoFillTrigger }) => {
+const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templateName, autoFillTrigger, gestationalAge }) => {
   const { t, language } = useLanguage();
-  const [content, setContent] = useState(initialTemplate);
+  const [content, setContent] = useState(() => syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge));
+  const previousGA = useRef(gestationalAge);
+  const [needsReview, setNeedsReview] = useState(false);
   const [contextInput, setContextInput] = useState('');
   const [aiStatus, setAiStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [copyStatus, setCopyStatus] = useState(false);
 
   // Reset content when the template changes
   useEffect(() => {
-    setContent(initialTemplate);
+    setContent(syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge));
     setContextInput('');
     setAiStatus(LoadingState.IDLE);
   }, [initialTemplate]);
+
+  useEffect(() => {
+    if (previousGA.current === gestationalAge) return;
+    const oldGA = previousGA.current;
+    setContent(current => syncGestationDraft(current, oldGA, gestationalAge));
+    previousGA.current = gestationalAge;
+    setNeedsReview(true);
+  }, [gestationalAge]);
 
   // Handle auto-fill trigger from calculator
   useEffect(() => {
@@ -33,8 +45,8 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
              setAiStatus(LoadingState.LOADING);
              try {
                 // Use the context directly from the trigger to avoid state staleness
-                const generated = await generateEnhancedConsult(initialTemplate, autoFillTrigger.context, language);
-                setContent(generated);
+                const generated = `${content}\n\n${autoFillTrigger.context}`;
+                setContent(syncGestationReference(generated, gestationalAge));
                 setAiStatus(LoadingState.SUCCESS);
              } catch (error) {
                 console.error("Template generation error:", error);
@@ -52,16 +64,16 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   };
 
   const handleReset = async () => {
-    setContent(initialTemplate);
+    setContent(syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge));
+    setNeedsReview(false);
   };
 
   const handleAIGenerate = async () => {
-    if (!contextInput.trim()) return;
 
     setAiStatus(LoadingState.LOADING);
     try {
-      const generated = await generateEnhancedConsult(initialTemplate, contextInput, language);
-      setContent(generated);
+      const generated = contextInput.trim() ? `${content}\n\n--- USER-ENTERED CONTEXT ---\n${contextInput.trim()}` : content;
+      setContent(syncGestationReference(generated, gestationalAge));
       setAiStatus(LoadingState.SUCCESS);
     } catch (error) {
       console.error("AI generate error:", error);
@@ -71,6 +83,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
 
   return (
     <div className="flex flex-col h-full space-y-4">
+      <p className="text-sm text-blue-800">Draft for {gestationalAge} completed weeks. {needsReview && 'Gestation changed: your text has been retained. Review prior figures, clinical statements and plans before using the note.'}</p>
       {/* AI Assistant Section */}
       <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 shadow-sm">
         <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -87,7 +100,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
           />
           <button
             onClick={handleAIGenerate}
-            disabled={aiStatus === LoadingState.LOADING || !contextInput}
+            disabled={aiStatus === LoadingState.LOADING}
             className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-md hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 transition-all shadow-sm"
           >
             {aiStatus === LoadingState.LOADING ? (

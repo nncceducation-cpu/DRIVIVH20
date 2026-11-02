@@ -4,10 +4,11 @@ import { ReferenceTableData } from '../types';
 interface ReferenceTableProps {
   data: ReferenceTableData;
   colorClass: string;
+  selectedTopic?: string;
   onRowSelect?: (topic: string, content: string) => void;
 }
 
-const ReferenceTable: React.FC<ReferenceTableProps> = ({ data, colorClass, onRowSelect }) => {
+const ReferenceTable: React.FC<ReferenceTableProps> = ({ data, colorClass, onRowSelect, selectedTopic }) => {
   const handleRowClick = (row: { [key: string]: string }) => {
     if (!onRowSelect) return;
     
@@ -43,8 +44,11 @@ const ReferenceTable: React.FC<ReferenceTableProps> = ({ data, colorClass, onRow
             <tr 
               key={rowIdx} 
               onClick={() => handleRowClick(row)}
-              className={`transition-colors ${onRowSelect ? 'cursor-pointer hover:bg-blue-50 active:bg-blue-100' : 'hover:bg-slate-50'}`}
-              title={onRowSelect ? "Add this reference to the consult draft" : ""}
+              tabIndex={onRowSelect ? 0 : undefined}
+              aria-selected={selectedTopic === row[data.headers[0]]}
+              onKeyDown={event => { if (onRowSelect && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); handleRowClick(row); } }}
+              className={`transition-colors ${selectedTopic === row[data.headers[0]] ? "bg-blue-100 " : ""}${onRowSelect ? 'cursor-pointer hover:bg-blue-50 active:bg-blue-100' : 'hover:bg-slate-50'}`}
+              title={onRowSelect ? "Select this gestational age" : ""}
             >
               {data.headers.map((header, colIdx) => (
                 <td

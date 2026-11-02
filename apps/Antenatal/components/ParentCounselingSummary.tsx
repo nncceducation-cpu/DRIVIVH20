@@ -17,15 +17,18 @@ import {
 } from 'lucide-react';
 import { PARENT_COUNSELING_DATABASE, FAQItem, StructuredConsultSummary } from '../data/counselingData';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getGestationCounseling } from '../utils/gestationContext';
 
 interface ParentCounselingSummaryProps {
   categoryId: string;
+  gestationalAge: number;
   categoryTitle: string;
   onSendToEMR: (formattedNote: string) => void;
 }
 
 export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = ({
   categoryId,
+  gestationalAge,
   categoryTitle,
   onSendToEMR
 }) => {
@@ -37,7 +40,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
   const [parentName, setParentName] = useState('');
   const [decisionChoice, setDecisionChoice] = useState<'active' | 'palliative' | 'pending'>('pending');
 
-  const data: StructuredConsultSummary = PARENT_COUNSELING_DATABASE[categoryId] || PARENT_COUNSELING_DATABASE['prematurity'];
+  const data: StructuredConsultSummary = categoryId === 'prematurity' ? getGestationCounseling(gestationalAge) : PARENT_COUNSELING_DATABASE[categoryId];
 
   const toggleFaqSelection = (id: string) => {
     setSelectedFaqIds(prev => 
@@ -59,6 +62,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
 
     let note = `**ANTENATAL CONSULTATION & PARENT COUNSELING DRAFT**\n`;
     note += `**Category / Topic:** ${categoryTitle}\n`;
+    note += `**Gestational Age:** ${gestationalAge} completed weeks\n`;
     if (parentName) {
       note += `**Parents/Support Present:** ${parentName}\n`;
     }
@@ -130,6 +134,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
 
       {/* Control Bar: Mode Toggle & Inputs */}
       <div className="p-4 bg-slate-50 border-b border-slate-200 space-y-3">
+        <p className="text-sm font-semibold text-blue-800">Counseling for {gestationalAge} completed weeks</p>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Sub-tabs */}
           <div className="flex flex-wrap gap-1 bg-slate-200 p-1 rounded-lg">
