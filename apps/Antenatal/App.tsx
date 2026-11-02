@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Baby, BookOpen, Activity, HeartHandshake, Languages, ExternalLink } from 'lucide-react';
 import { CONSULT_DATA } from './constants';
 import ReferenceTable from './components/ReferenceTable';
@@ -17,6 +17,15 @@ function AntenatalConsult() {
   const [view, setView] = useState<'guidelines' | 'outcomes' | 'counseling' | 'neolingo'>('counseling');
   const [note, setNote] = useState<{context: string; timestamp: number} | null>(null);
   const [gestationalAge, setGestationalAge] = useState(24);
+  const [neoSeparate, setNeoSeparate] = useState(false);
+  const [parentActive, setParentActive] = useState(true);
+  useEffect(() => {
+    const visibility = (event: MessageEvent) => {
+      if (event.source === window.parent && event.origin === window.location.origin && event.data?.type === 'DRIVIVH_TOOL_VISIBILITY') setParentActive(event.data.active === true);
+    };
+    window.addEventListener('message', visibility);
+    return () => window.removeEventListener('message', visibility);
+  }, []);
   const selected = getGestationContext(gestationalAge);
   const referenceData = { ...prematurity.referenceData, headers: ['Gestation', 'Survival (imported reference)', 'NDD (imported reference)', 'Management Pathway'], rows: [22,23,24,25,26,27,28].map(week => {
     const profile = getGestationContext(week).profile;
@@ -30,12 +39,12 @@ function AntenatalConsult() {
     <nav aria-label="Antenatal Consult sections" className="flex flex-wrap gap-2 mb-5">
       {([{id:'guidelines',label:'Prematurity Guidelines',icon:BookOpen},{id:'outcomes',label:'Survival and Outcomes',icon:Activity},{id:'counseling',label:'Structured Summary and Parent FAQs',icon:HeartHandshake},{id:'neolingo',label:'NeoLingo',icon:Languages}] as const).map(tab => <button key={tab.id} onClick={()=>setView(tab.id)} aria-pressed={view===tab.id} className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border ${view===tab.id?'bg-blue-700 border-blue-700 text-white':'bg-white border-slate-200 text-slate-700'}`}><tab.icon size={17}/>{tab.label}</button>)}
     </nav>
-    <PersistentPanel active={view==='neolingo'}>
+    {view==='neolingo' && <div>
       <section className="flex flex-col min-h-[700px] rounded-xl overflow-hidden border border-slate-200 bg-white">
-        <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border-b border-slate-200 p-4"><h2 className="text-lg font-bold flex items-center gap-2"><Languages size={20}/>NeoLingo</h2><a href="https://neolingo.calnncc.chatgpt.site/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-700 underline">Open NeoLingo separately <ExternalLink size={14}/></a></header>
-        <ExternalToolFrame url="https://neolingo.calnncc.chatgpt.site/" title="NeoLingo" allow="microphone; autoplay; clipboard-write" />
+        <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border-b border-slate-200 p-4"><h2 className="text-lg font-bold flex items-center gap-2"><Languages size={20}/>NeoLingo</h2><div className="flex flex-wrap gap-3"><button onClick={()=>setNeoSeparate(true)} className="text-sm text-blue-700 underline">Stop embedded session</button><a href="https://neolingo.calnncc.chatgpt.site/" onClick={()=>setNeoSeparate(true)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-700 underline">Open NeoLingo separately <ExternalLink size={14}/></a></div></header>
+        {!neoSeparate && parentActive ? <ExternalToolFrame url="https://neolingo.calnncc.chatgpt.site/" title="NeoLingo" allow="microphone; autoplay; clipboard-write" /> : <div className="p-6 text-sm"><p>Embedded NeoLingo is stopped. Close or stop any separate NeoLingo session before resuming here.</p><button onClick={()=>setNeoSeparate(false)} className="mt-4 rounded-lg bg-blue-700 px-4 py-2 text-white">Resume NeoLingo here</button></div>}
       </section>
-    </PersistentPanel>
+    </div>}
     <div hidden={view==='neolingo'} className={`grid gap-6 ${view==='outcomes'?'grid-cols-1':'grid-cols-1 xl:grid-cols-2'}`}>
       <div>
         <div hidden={view!=='guidelines'} className="space-y-6">

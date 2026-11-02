@@ -311,7 +311,7 @@ const DriveIVH: React.FC<DriveIVHProps> = ({ refs, onUpload, onReset }) => {
         )}
 
         <PersistentPanel active={activeTab === 'antenatal'}>
-          <PublishedApp app="Antenatal" title="Antenatal Consult" />
+          <PublishedApp app="Antenatal" title="Antenatal Consult" active={activeTab === 'antenatal'} />
         </PersistentPanel>
 
         {/* BENCHMARK TOOL */}
