@@ -36,6 +36,8 @@ The antenatal app builds with the root Vite installation and uses the already pi
 
 ## Embedded tools and loading
 
+The VON Survival and Outcome tab now embeds the standalone [VON-benchmark](https://github.com/nncceducation-cpu/VON-benchmark) app at https://nncceducation-cpu.github.io/VON-benchmark/. Both the main pathway and Antenatal Consult use the shared VON component. The benchmark publishes the Network-only annual 2024/2025 results from the supplied report generated October 27, 2026, with historical 2023 strata separately labeled. It does not depend on the former Cloud Run service.
+
 NeoLingo opens inside Antenatal Consult with a separate-window fallback. Microphone permission is delegated to the embedded view and remains controlled by the browser. The app does not copy translation text or audio into the consultation note.
 
 CNN and VON connections are prepared early and kept mounted across tab changes; CNN also stays open while its guide is shown. The Antenatal app and its draft remain mounted after the first visit. Loading indicators no longer cover the external page. These changes avoid repeat document loads within the same open app session; initial external-server response time remains outside this app's control. An explicit CNN Reload or a full browser refresh still starts a new connection.

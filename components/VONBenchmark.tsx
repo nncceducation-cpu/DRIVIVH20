@@ -2,6 +2,8 @@ import React from 'react';
 import ExternalToolFrame from './ExternalToolFrame';
 import { BarChart2, Calculator, ExternalLink } from 'lucide-react';
 
+const VON_URL = 'https://nncceducation-cpu.github.io/VON-benchmark/';
+
 export default function VONBenchmark({ onSwitchToCNN, cnnLabel = 'CNN Calculator' }: { onSwitchToCNN: () => void; cnnLabel?: string }) {
   return (
           <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[600px]">
@@ -30,7 +32,7 @@ export default function VONBenchmark({ onSwitchToCNN, cnnLabel = 'CNN Calculator
                       <span>{cnnLabel}</span>
                    </button>
                    <a 
-                     href="https://von-reference-benchmark-tool-915899500738.us-west1.run.app/" 
+                     href={VON_URL}
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 font-bold bg-white border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-50 transition-all shadow-sm"
@@ -39,7 +41,7 @@ export default function VONBenchmark({ onSwitchToCNN, cnnLabel = 'CNN Calculator
                    </a>
                 </div>
              </div>
-             <ExternalToolFrame url="https://von-reference-benchmark-tool-915899500738.us-west1.run.app/" title="VON Survival and Outcome" />
+             <ExternalToolFrame url={VON_URL} title="VON Survival and Outcome" />
           </div>
   );
 }
