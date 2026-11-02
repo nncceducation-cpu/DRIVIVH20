@@ -18,6 +18,15 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   const previousGA = useRef(gestationalAge);
   const [needsReview, setNeedsReview] = useState(false);
   const [contextInput, setContextInput] = useState('');
+  const [cnnResult, setCnnResult] = useState('');
+  const [cnnResultGA, setCnnResultGA] = useState<number | null>(null);
+  const attachCNN = (text: string) => {
+    const start = '--- OFFICIAL CNN RESULT (USER-ENTERED) ---';
+    const end = '--- END OFFICIAL CNN RESULT ---';
+    const first = text.indexOf(start), last = text.indexOf(end, first);
+    if (first >= 0 && last >= first) text = text.slice(0, first) + text.slice(last + end.length);
+    return cnnResult.trim() ? `${text.trimEnd()}\n\n${start}\nSource: official CNN calculator; copied by the user, not independently retrieved or verified. Entered for GA ${cnnResultGA} weeks.\n${cnnResultGA !== gestationalAge ? 'GA HAS CHANGED: rerun the official calculator and replace this result before use.\n' : ''}${cnnResult.trim()}\nhttps://www.canadianneonatalnetwork.org/CAL/Calculator.aspx\n${end}` : text;
+  };
   const [aiStatus, setAiStatus] = useState<LoadingState>(LoadingState.IDLE);
   const [copyStatus, setCopyStatus] = useState(false);
 
@@ -31,7 +40,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   useEffect(() => {
     if (previousGA.current === gestationalAge) return;
     const oldGA = previousGA.current;
-    setContent(current => syncGestationDraft(current, oldGA, gestationalAge));
+    setContent(current => attachCNN(syncGestationDraft(current, oldGA, gestationalAge)));
     setContextInput(current => current.trim() ? syncGestationDraft(current, oldGA, gestationalAge) : current);
     previousGA.current = gestationalAge;
     setNeedsReview(true);
@@ -47,7 +56,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
              try {
                 // Use the context directly from the trigger to avoid state staleness
                 const generated = `${content}\n\n${autoFillTrigger.context}`;
-                setContent(syncGestationReference(generated, gestationalAge));
+                setContent(attachCNN(syncGestationReference(generated, gestationalAge)));
                 setAiStatus(LoadingState.SUCCESS);
              } catch (error) {
                 console.error("Template generation error:", error);
@@ -65,7 +74,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   };
 
   const handleReset = async () => {
-    setContent(syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge));
+    setContent(attachCNN(syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge)));
     setNeedsReview(false);
   };
 
@@ -74,7 +83,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
     setAiStatus(LoadingState.LOADING);
     try {
       const generated = contextInput.trim() ? `${content}\n\n--- USER-ENTERED CONTEXT ---\n${contextInput.trim()}` : content;
-      setContent(syncGestationReference(generated, gestationalAge));
+      setContent(attachCNN(syncGestationReference(generated, gestationalAge)));
       setAiStatus(LoadingState.SUCCESS);
     } catch (error) {
       console.error("AI generate error:", error);
@@ -86,6 +95,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
     <div className="flex flex-col h-full space-y-4">
       <p className="text-sm text-blue-800">Draft for {gestationalAge} completed weeks. {needsReview && 'Gestation changed: your text has been retained. Review prior figures, clinical statements and plans before using the note.'}</p>
       {/* AI Assistant Section */}
+      <details className="rounded-lg border border-slate-200 bg-white p-3 text-sm">
+        <summary className="cursor-pointer font-semibold">Add an official CNN calculator result</summary>
+        <p className="text-xs text-slate-600 my-2">Copy the result with its day of life, inputs and outcome labels from the official CNN calculator, then click Prepare Draft. The embedded calculator cannot transfer results automatically. Antenatal reference figures above are separate and unverified.</p>
+        <textarea aria-label="Official CNN calculator result" value={cnnResult} onChange={event => { setCnnResult(event.target.value); setCnnResultGA(gestationalAge); }} className="w-full h-24 border rounded p-2" placeholder="Paste the official result, including inputs and day of life" />
+        {cnnResult.trim() && cnnResultGA !== gestationalAge && <p className="text-amber-800 text-xs">GA has changed. Recalculate and replace the CNN result.</p>}
+      </details>
       <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 shadow-sm">
         <label className="block text-sm font-medium text-slate-700 mb-2">
           Prepare Consult Draft Locally

@@ -18,10 +18,11 @@ const structured = '**ANTENATAL CONSULTATION DRAFT**\nCare goal: pending';
 assert.equal(await generateEnhancedConsult(template,structured),structured);
 const { RISK_DATA } = await importTS('../apps/Antenatal/riskData.ts');
 const { PARENT_COUNSELING_DATABASE } = await importTS('../apps/Antenatal/data/counselingData.ts');
+const { VON_NETWORK_REPORT } = await importTS('../apps/Antenatal/data/vonNetworkReport.ts');
 const contextSource = readFileSync(new URL('../apps/Antenatal/utils/gestationContext.ts', import.meta.url), 'utf8')
  .replace(/import .* from .*;\r?\n/g, '');
 const contextJS = ts.transpileModule(contextSource, {compilerOptions:{module:ts.ModuleKind.ES2022}}).outputText;
-const contextModule = `const RISK_DATA=${JSON.stringify(RISK_DATA)};const PARENT_COUNSELING_DATABASE=${JSON.stringify(PARENT_COUNSELING_DATABASE)};\n${contextJS}`;
+const contextModule = `const RISK_DATA=${JSON.stringify(RISK_DATA)};const PARENT_COUNSELING_DATABASE=${JSON.stringify(PARENT_COUNSELING_DATABASE)};const VON_NETWORK_REPORT=${JSON.stringify(VON_NETWORK_REPORT)};\n${contextJS}`;
 const { getGestationCounseling, syncGestationDraft, syncGestationReference } = await import(`data:text/javascript;base64,${Buffer.from(contextModule).toString('base64')}`);
 for (let oldGA=22;oldGA<=28;oldGA++) for(let nextGA=22;nextGA<=28;nextGA++) {
  const before=getGestationCounseling(oldGA), after=getGestationCounseling(nextGA);
@@ -36,6 +37,13 @@ for (let oldGA=22;oldGA<=28;oldGA++) for(let nextGA=22;nextGA<=28;nextGA++) {
  assert.ok(changed.includes('Care goal: palliative; Parent: Alex; custom note: retain this.'));
  assert.equal(changed.split('--- CURRENT GESTATION REFERENCE (AUTO-UPDATED) ---').length,2);
  assert.equal(syncGestationReference(changed,nextGA),changed);
+ const filled=syncGestationReference(`- Discussed current survival statistics for ${oldGA} weeks gestation in Canada (approx ***%).\n- Long-term neurodevelopmental risks discussed (Significant Disability approx ***%). Definitions of disability provided including motor, cognitive, and sensory.\nSteroids: ***`,oldGA);
+ const moved=syncGestationDraft(filled,oldGA,nextGA);
+ assert.ok(!moved.includes('approx ***%'));
+ assert.ok(moved.includes(`${RISK_DATA.prematurity.profiles[nextGA].stats[0].value}% with active care`));
+ assert.ok(moved.includes('Severe Intraventricular Hemorrhage: 8.1% (reported N=50,129)'));
+ assert.ok(moved.includes('Cystic PVL: 2.7%'));
+ assert.ok(moved.includes('Steroids: ***'));
 }
 assert.deepEqual(Object.keys(RISK_DATA.prematurity.profiles),['22','23','24','25','26','27','28']);
 assert.deepEqual(Object.values(RISK_DATA.prematurity.profiles).map(p=>p.stats[0].value),[25,45,69,80,90,95,97]);

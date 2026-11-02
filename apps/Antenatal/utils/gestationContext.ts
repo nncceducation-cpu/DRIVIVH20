@@ -1,5 +1,6 @@
 import { RISK_DATA } from '../riskData';
 import { PARENT_COUNSELING_DATABASE } from '../data/counselingData';
+import { VON_NETWORK_REPORT } from '../data/vonNetworkReport';
 
 export const REFERENCE_WARNING = 'Imported NeoConsult reference figures; cohort attribution has not been independently verified. These are not individualized predictions.';
 export function getGestationContext(weeks: number) {
@@ -35,8 +36,32 @@ export function getGestationCounseling(weeks: number) {
 
 const START = '--- CURRENT GESTATION REFERENCE (AUTO-UPDATED) ---';
 const END = '--- END CURRENT GESTATION REFERENCE ---';
+export function getDraftOutcomeLines(weeks: number) {
+  const { profile } = getGestationContext(weeks);
+  return {
+    survival: `- Antenatal survival reference to review for ${weeks} completed weeks: ${profile.stats[0].value}% with active care (imported NeoConsult figure; CNN attribution unverified).`,
+    disability: `- Developmental outcome reference to review for ${weeks} completed weeks: ${profile.stats[1].label} ${profile.stats[1].value}% (imported NeoConsult figure; source attribution and denominator unverified).`
+  };
+}
+
+export function fillConsultNumbers(content: string, weeks: number) {
+  const lines = getDraftOutcomeLines(weeks);
+  return content
+    .replaceAll('*** weeks', `${weeks} weeks`)
+    .replaceAll(`- Discussed current survival statistics for ${weeks} weeks gestation in Canada (approx ***%).`, lines.survival)
+    .replaceAll('- Long-term neurodevelopmental risks discussed (Significant Disability approx ***%). Definitions of disability provided including motor, cognitive, and sensory.', lines.disability);
+}
+
+export function formatVONNetworkReference() {
+  return `VON NETWORK BENCHMARKS — ${VON_NETWORK_REPORT.reportYear} VLBW (all gestations combined)\n` +
+    VON_NETWORK_REPORT.metrics.filter(metric => metric.kind === 'Outcome').map(metric =>
+      `${metric.name.replace(' - Your Center', '')}: ${metric['2025'].percent}% (reported N=${metric['2025'].n.toLocaleString('en-US')})`
+    ).join('; ') +
+    `\nSource: ${VON_NETWORK_REPORT.title}, page ${VON_NETWORK_REPORT.sourcePage}; generated ${VON_NETWORK_REPORT.generatedOn}; Network columns only. Reported N is not the event count. These are aggregate benchmarks, not this infant's predicted risks. This report supplies no VON survival, NDD or gestation-specific estimates.\nhttps://nncceducation-cpu.github.io/VON-benchmark/`;
+}
 export function syncGestationReference(content: string, weeks: number): string {
-  const block = `${START}\n${getGestationContext(weeks).reference}\n${END}`;
+  content = fillConsultNumbers(content, weeks);
+  const block = `${START}\n${getGestationContext(weeks).reference}\n\n${formatVONNetworkReference()}\n${END}`;
   const start = content.indexOf(START), end = content.indexOf(END, start);
   if (start >= 0 && end >= start) return content.slice(0, start) + block + content.slice(end + END.length);
   return `${content}\n\n${block}`;
@@ -45,6 +70,8 @@ export function syncGestationReference(content: string, weeks: number): string {
 export function syncGestationDraft(content: string, previous: number, next: number): string {
   const oldData = getGestationCounseling(previous), newData = getGestationCounseling(next);
   let result = content;
+  const previousLines = getDraftOutcomeLines(previous), nextLines = getDraftOutcomeLines(next);
+  result = result.replaceAll(previousLines.survival, nextLines.survival).replaceAll(previousLines.disability, nextLines.disability);
   const riskContext = (weeks: number) => {
     const { profile } = getGestationContext(weeks);
     return `Diagnosis/Situation: ${profile.name}. Statistics: ${profile.stats.map(s => `${s.label}: ${s.value}%`).join(', ')}. Typical Management: ${profile.managementPath.join('. ')}.`;
