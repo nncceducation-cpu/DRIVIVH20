@@ -58,7 +58,7 @@ export const CONSULT_DATA: ConsultCategory[] = [
       ]
     },
     careComparison: [
-      { feature: 'Survival', intensive: 'Possible', palliative: 'No' },
+      { feature: 'Survival', intensive: 'Possible', palliative: 'Comfort-focused care; survival is not the treatment goal' },
       { feature: 'Long-term Disability', intensive: 'Variable', palliative: 'N/A' },
       { feature: 'Quality of Life Impact', intensive: 'Yes (Child and Family)', palliative: 'Yes (Family)' },
       { feature: 'Painful Procedures', intensive: 'Yes', palliative: 'No' },
