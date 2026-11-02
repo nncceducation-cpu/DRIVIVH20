@@ -32,6 +32,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
     if (previousGA.current === gestationalAge) return;
     const oldGA = previousGA.current;
     setContent(current => syncGestationDraft(current, oldGA, gestationalAge));
+    setContextInput(current => current.trim() ? syncGestationDraft(current, oldGA, gestationalAge) : current);
     previousGA.current = gestationalAge;
     setNeedsReview(true);
   }, [gestationalAge]);
@@ -39,7 +40,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   // Handle auto-fill trigger from calculator
   useEffect(() => {
     if (autoFillTrigger && autoFillTrigger.context) {
-        setContextInput(autoFillTrigger.context);
+        setContextInput('');
         
         const runAutoGeneration = async () => {
              setAiStatus(LoadingState.LOADING);

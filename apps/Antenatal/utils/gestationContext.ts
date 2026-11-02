@@ -45,6 +45,11 @@ export function syncGestationReference(content: string, weeks: number): string {
 export function syncGestationDraft(content: string, previous: number, next: number): string {
   const oldData = getGestationCounseling(previous), newData = getGestationCounseling(next);
   let result = content;
+  const riskContext = (weeks: number) => {
+    const { profile } = getGestationContext(weeks);
+    return `Diagnosis/Situation: ${profile.name}. Statistics: ${profile.stats.map(s => `${s.label}: ${s.value}%`).join(', ')}. Typical Management: ${profile.managementPath.join('. ')}.`;
+  };
+  result = result.replaceAll(riskContext(previous), riskContext(next));
   for (const key of ['diagnosticSummary', 'deliveryRoomPlan', 'nicuExpectations', 'longTermPrognosis'] as const) {
     result = result.replaceAll(oldData[key], newData[key]);
   }
