@@ -1,6 +1,7 @@
 import { RISK_DATA } from '../riskData';
 import { PARENT_COUNSELING_DATABASE } from '../data/counselingData';
 import { VON_NETWORK_REPORT } from '../data/vonNetworkReport';
+import { VON_HISTORICAL_GA } from '../data/vonHistorical';
 
 export const REFERENCE_WARNING = 'Imported NeoConsult reference figures; cohort attribution has not been independently verified. These are not individualized predictions.';
 export function getGestationContext(weeks: number) {
@@ -11,14 +12,14 @@ export function getGestationContext(weeks: number) {
   return { weeks, profile, statistics, reference };
 }
 
-export function getGestationCounseling(weeks: number) {
+export function getGestationCounseling(weeks: number, careGoal: 'active' | 'palliative' | 'pending' = 'pending') {
   const base = PARENT_COUNSELING_DATABASE.prematurity;
   const { reference } = getGestationContext(weeks);
   return {
     ...base,
     diagnosticSummary: base.diagnosticSummary.replace('at borderline viability (22-28 weeks gestation)', `at ${weeks} completed weeks gestation`),
-    deliveryRoomPlan: `Selected gestation: ${weeks} completed weeks. ${base.deliveryRoomPlan}`,
-    nicuExpectations: `For delivery at ${weeks} completed weeks: ${base.nicuExpectations}`,
+    deliveryRoomPlan: `Selected gestation: ${weeks} completed weeks. ` + (careGoal === 'active' ? base.deliveryRoomPlan.split(' If comfort care elected:')[0] : careGoal === 'palliative' ? `Selected goal: palliative comfort care. ${base.deliveryRoomPlan.split('If comfort care elected: ')[1]}` : `Care goal pending; the following alternatives require discussion, not confirmation of a plan. ${base.deliveryRoomPlan}`),
+    nicuExpectations: careGoal === 'palliative' ? `For delivery at ${weeks} completed weeks, palliative comfort care is selected. The intensive NICU course is not the selected care pathway. Confirm and document the individualized comfort-care plan.` : `For delivery at ${weeks} completed weeks${careGoal === 'pending' ? ', if intensive care is chosen' : ''}: ${base.nicuExpectations}`,
     longTermPrognosis: reference,
     faqs: base.faqs.map(faq => {
       if (faq.id === 'prem_survival' || faq.id === 'prem_disability') return {
@@ -59,9 +60,18 @@ export function formatVONNetworkReference() {
     ).join('; ') +
     `\nSource: ${VON_NETWORK_REPORT.title}, page ${VON_NETWORK_REPORT.sourcePage}; generated ${VON_NETWORK_REPORT.generatedOn}; Network columns only. Reported N is not the event count. These are aggregate benchmarks, not this infant's predicted risks. This report supplies no VON survival, NDD or gestation-specific estimates.\nhttps://nncceducation-cpu.github.io/VON-benchmark/`;
 }
+export function formatVONHistoricalReference(weeks: number) {
+  getGestationContext(weeks);
+  const band = weeks < 24 ? '< 24' : weeks <= 26 ? '24-26' : '27-29';
+  const mortality = VON_HISTORICAL_GA.stats[0].rates[band];
+  const survival = Number((100 - mortality).toFixed(1));
+  return `VON HISTORICAL 2023 — GA band ${band} weeks\nDerived survival: ${survival}% (100 minus reported mortality ${mortality}%). ` +
+    VON_HISTORICAL_GA.stats.slice(1).map(metric => `${metric.name}: ${metric.rates[band]}%`).join('; ') +
+    '\nSource: historical 2023 table copied from the original VON benchmark app; original cohort attribution has not been independently verified. These are grouped GA figures, not single-week or individualized predictions. Survival is an arithmetic complement, not a separately reported endpoint. These figures are separate from the 2025 Network report.\nhttps://nncceducation-cpu.github.io/VON-benchmark/';
+}
 export function syncGestationReference(content: string, weeks: number): string {
   content = fillConsultNumbers(content, weeks);
-  const block = `${START}\n${getGestationContext(weeks).reference}\n\n${formatVONNetworkReference()}\n${END}`;
+  const block = `${START}\n${getGestationContext(weeks).reference}\n\n${formatVONHistoricalReference(weeks)}\n\n${formatVONNetworkReference()}\n${END}`;
   const start = content.indexOf(START), end = content.indexOf(END, start);
   if (start >= 0 && end >= start) return content.slice(0, start) + block + content.slice(end + END.length);
   return `${content}\n\n${block}`;

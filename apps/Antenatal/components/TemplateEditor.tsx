@@ -4,6 +4,7 @@ import { generateEnhancedConsult } from '../services/geminiService';
 import { LoadingState } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { syncGestationReference, syncGestationDraft } from '../utils/gestationContext';
+import { mergeCounselingDraft } from '../utils/counselingDraft';
 
 interface TemplateEditorProps {
   initialTemplate: string;
@@ -16,6 +17,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
   const { t, language } = useLanguage();
   const [content, setContent] = useState(() => syncGestationReference(initialTemplate.replaceAll('*** weeks', `${gestationalAge} weeks`), gestationalAge));
   const previousGA = useRef(gestationalAge);
+  const previousCounseling = useRef('');
   const [needsReview, setNeedsReview] = useState(false);
   const [contextInput, setContextInput] = useState('');
   const [cnnResult, setCnnResult] = useState('');
@@ -55,8 +57,10 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ initialTemplate, templa
              setAiStatus(LoadingState.LOADING);
              try {
                 // Use the context directly from the trigger to avoid state staleness
-                const generated = `${content}\n\n${autoFillTrigger.context}`;
-                setContent(attachCNN(syncGestationReference(generated, gestationalAge)));
+                const isCounseling = autoFillTrigger.context.includes('**ANTENATAL CONSULTATION & PARENT COUNSELING DRAFT**');
+                const previous = previousCounseling.current;
+                setContent(current => attachCNN(syncGestationReference(isCounseling ? mergeCounselingDraft(current, autoFillTrigger.context, previous) : `${current}\n\n${autoFillTrigger.context}`, gestationalAge)));
+                if (isCounseling) previousCounseling.current = autoFillTrigger.context;
                 setAiStatus(LoadingState.SUCCESS);
              } catch (error) {
                 console.error("Template generation error:", error);

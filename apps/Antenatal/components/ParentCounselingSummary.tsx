@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   HelpCircle, 
   CheckCircle2, 
@@ -40,7 +40,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
   const [parentName, setParentName] = useState('');
   const [decisionChoice, setDecisionChoice] = useState<'active' | 'palliative' | 'pending'>('pending');
 
-  const data: StructuredConsultSummary = categoryId === 'prematurity' ? getGestationCounseling(gestationalAge) : PARENT_COUNSELING_DATABASE[categoryId];
+  const data: StructuredConsultSummary = categoryId === 'prematurity' ? getGestationCounseling(gestationalAge, decisionChoice) : PARENT_COUNSELING_DATABASE[categoryId];
 
   const toggleFaqSelection = (id: string) => {
     setSelectedFaqIds(prev => 
@@ -57,15 +57,17 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
     faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleGenerateAndExport = () => {
+  const buildDraft = () => {
     const selectedFaqItems = data.faqs.filter(f => selectedFaqIds.includes(f.id));
 
     let note = `**ANTENATAL CONSULTATION & PARENT COUNSELING DRAFT**\n`;
     note += `**Category / Topic:** ${categoryTitle}\n`;
     note += `**Gestational Age:** ${gestationalAge} completed weeks\n`;
+    note += `**Output view:** ${activeTab === "summary" ? "Structured Clinical Summary" : "Selected Parent FAQs"}\n`;
     if (parentName) {
       note += `**Parents/Support Present:** ${parentName}\n`;
     }
+    if (activeTab === "summary") {
     note += `\n--- CLINICAL & DIAGNOSTIC SUMMARY ---\n`;
     note += `${data.diagnosticSummary}\n\n`;
 
@@ -78,12 +80,13 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
     note += `--- PROGNOSIS & LONG-TERM OUTCOMES ---\n`;
     note += `${data.longTermPrognosis}\n\n`;
 
+    }
     note += `--- PARENT COUNSELING & COMMUNICATION RECORD ---\n`;
-    note += `**Resuscitation / Care Path Decision:** ${
+    note += `**Selected Care Goal (draft; confirm with family):** ${
       decisionChoice === 'active' 
         ? 'Active Planned Resuscitation & Full Intervention' 
         : decisionChoice === 'palliative' 
-          ? 'Palliative Comfort Care Plan (Birth Plan documented)' 
+          ? 'Palliative Comfort Care selected; confirm and document the birth plan' 
           : 'Pending family deliberation following multidisciplinary review'
     }\n\n`;
 
@@ -98,7 +101,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
         note += `\n${idx + 1}. **Q:** "${faq.question}"\n   **Suggested Counseling:** ${faq.answer}\n`;
       });
     } else {
-      note += `\n**Specific Parent Questions Addressed:** *** Complete after discussion.\n`;
+      note += `\n**Parent questions:** No questions selected. Select questions in the Parent FAQs tab to include their answers.\n`;
     }
 
     note += `\n**PLAN & ANCILLARY SUPPORT:**\n`;
@@ -106,8 +109,14 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
     note += `- Neonatal team notification: ***\n`;
     note += `- Referrals and social work support: ***\n`;
 
-    onSendToEMR(note);
+    return note;
   };
+
+  const draft = buildDraft();
+  const sendRef = useRef(onSendToEMR);
+  sendRef.current = onSendToEMR;
+  useEffect(() => { sendRef.current(draft); }, [draft]);
+  const handleGenerateAndExport = () => onSendToEMR(draft);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
@@ -135,11 +144,13 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
       {/* Control Bar: Mode Toggle & Inputs */}
       <div className="p-4 bg-slate-50 border-b border-slate-200 space-y-3">
         <p className="text-sm font-semibold text-blue-800">Counseling for {gestationalAge} completed weeks</p>
+        <p role="status" className="text-xs text-slate-600">Consult note updates automatically with the care goal, output view, parent details and selected questions. Expanding or searching a question does not select it.</p>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Sub-tabs */}
           <div className="flex flex-wrap gap-1 bg-slate-200 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('summary')}
+              aria-pressed={activeTab === 'summary'}
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'summary' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -149,6 +160,7 @@ export const ParentCounselingSummary: React.FC<ParentCounselingSummaryProps> = (
             </button>
             <button
               onClick={() => setActiveTab('faqs')}
+              aria-pressed={activeTab === 'faqs'}
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'faqs' ? 'bg-white text-medical-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
